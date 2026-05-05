@@ -7,27 +7,28 @@ import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
 import { formatNumber, formatPercent } from "@/lib/dashboard-data";
 
-function compareBy(field) {
-  return (left, right) => {
-    if (field === "government") {
-      return left.government.localeCompare(right.government, "pt-BR");
-    }
-    return (right[field] ?? 0) - (left[field] ?? 0);
-  };
+function truncateGovernment(value, max = 18) {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
 function GovernmentChart({ data, title }) {
   return (
     <ChartCard
       title={title}
-      subtitle="Ordenado conforme a métrica selecionada, com taxa, volume judicializado e distância da média do tipo."
+      subtitle="Ordenado em ordem decrescente por taxa de judicialização."
       height="h-[28rem]"
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 16, right: 24, left: 40, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
           <XAxis type="number" tickFormatter={(value) => `${value}%`} />
-          <YAxis type="category" dataKey="government" width={180} tick={{ fontSize: 11 }} />
+          <YAxis
+            type="category"
+            dataKey="government"
+            width={140}
+            tick={{ fontSize: 10 }}
+            tickFormatter={(value) => truncateGovernment(value)}
+          />
           <Tooltip
             content={
               <RichTooltip
@@ -37,11 +38,10 @@ function GovernmentChart({ data, title }) {
                     return [];
                   }
                   return [
+                    { label: "Governo", value: row.government },
                     { label: "Taxa", value: formatPercent(row.rate) },
-                    { label: "Normas editadas", value: formatNumber(row.total) },
-                    { label: "Normas judicializadas", value: formatNumber(row.judicialized) },
-                    { label: "Processos", value: formatNumber(row.processes) },
-                    { label: "Média do tipo", value: formatPercent(row.averageRate) },
+                    { label: "Total editado", value: formatNumber(row.total) },
+                    { label: "Judicializados", value: formatNumber(row.judicialized) },
                   ];
                 }}
               />
@@ -54,41 +54,49 @@ function GovernmentChart({ data, title }) {
   );
 }
 
+function GovernmentBlock({ title, rows }) {
+  return (
+    <section className="space-y-4">
+      <GovernmentChart data={rows} title={title} />
+      <DataTable
+        rows={rows}
+        columns={[
+          { key: "government", label: "Governo" },
+          { key: "total", label: "Total editado", render: (row) => formatNumber(row.total) },
+          { key: "judicialized", label: "Judicializados", render: (row) => formatNumber(row.judicialized) },
+          { key: "rate", label: "Taxa", render: (row) => formatPercent(row.rate) },
+        ]}
+      />
+    </section>
+  );
+}
+
 export function GovernmentSection({ rows, selectedType }) {
   const [view, setView] = useState("all");
-  const [order, setOrder] = useState("rate");
-
   const effectiveView = selectedType === "all" ? view : selectedType;
 
-  const sortedRows = useMemo(() => [...rows].sort(compareBy(order)), [order, rows]);
+  const sortedRows = useMemo(
+    () => [...rows].sort((left, right) => (right.rate ?? 0) - (left.rate ?? 0)),
+    [rows]
+  );
 
   const decrees = sortedRows.filter((item) => item.type === "decreto");
   const mps = sortedRows.filter((item) => item.type === "mp");
-
-  const tableRows = useMemo(() => {
-    if (effectiveView === "decreto") {
-      return decrees;
-    }
-    if (effectiveView === "mp") {
-      return mps;
-    }
-    return sortedRows;
-  }, [decrees, effectiveView, mps, sortedRows]);
 
   return (
     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 space-y-6">
       <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-950">Governos com maior judicialização</h2>
+          <h2 className="text-xl font-semibold text-slate-950">Judicialização por governo emissor</h2>
           <p className="text-sm text-slate-500">
-            Decretos e MPs agora aparecem separados e comparáveis, com recorte adicional por taxa.
+            A taxa indica a proporção de atos judicializados dentro do total de atos editados por cada governo, separadamente para decretos e medidas provisórias.
           </p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <Filter className="h-4 w-4" />
-            <span className="font-medium">Visualização</span>
+            <span className="font-medium">Exibir</span>
             <select
               value={effectiveView}
               onChange={(event) => setView(event.target.value)}
@@ -100,50 +108,23 @@ export function GovernmentSection({ rows, selectedType }) {
               <option value="mp">MPs</option>
             </select>
           </label>
-
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            <span className="font-medium">Ordenação</span>
-            <select
-              value={order}
-              onChange={(event) => setOrder(event.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            >
-              <option value="rate">Taxa</option>
-              <option value="judicialized">Total judicializado</option>
-              <option value="total">Total editado</option>
-              <option value="government">Ordem alfabética</option>
-            </select>
-          </label>
         </div>
       </div>
 
-      {effectiveView === "all" ? (
-        <div className="grid gap-6 xl:grid-cols-2">
-          <GovernmentChart data={decrees} title="Decretos por governo" />
-          <GovernmentChart data={mps} title="MPs por governo" />
-        </div>
-      ) : (
-        <GovernmentChart
-          data={effectiveView === "decreto" ? decrees : mps}
-          title={effectiveView === "decreto" ? "Decretos por governo" : "MPs por governo"}
-        />
-      )}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        A leitura correta é intragrupo: compare decretos com decretos e MPs com MPs. Como os universos normativos são muito diferentes, a taxa é mais informativa que o número absoluto.
+      </div>
 
-      <DataTable
-        rows={tableRows}
-        columns={[
-          { key: "government", label: "Governo" },
-          { key: "typeShort", label: "Tipo" },
-          { key: "total", label: "Total editado", render: (row) => formatNumber(row.total) },
-          {
-            key: "judicialized",
-            label: "Total judicializado",
-            render: (row) => formatNumber(row.judicialized),
-          },
-          { key: "processes", label: "Processos", render: (row) => formatNumber(row.processes) },
-          { key: "rate", label: "Taxa", render: (row) => formatPercent(row.rate) },
-        ]}
-      />
+      {effectiveView === "all" ? (
+        <div className="space-y-8">
+          <GovernmentBlock title="Decretos por governo" rows={decrees} />
+          <GovernmentBlock title="Medidas provisórias por governo" rows={mps} />
+        </div>
+      ) : effectiveView === "decreto" ? (
+        <GovernmentBlock title="Decretos por governo" rows={decrees} />
+      ) : (
+        <GovernmentBlock title="Medidas provisórias por governo" rows={mps} />
+      )}
     </motion.section>
   );
 }

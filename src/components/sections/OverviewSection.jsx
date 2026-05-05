@@ -1,5 +1,15 @@
 import { motion } from "framer-motion";
-import { ResponsiveContainer, BarChart, Bar, Cell, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  LabelList,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 import { ShieldAlert, Landmark, Clock3, FileText, Gavel } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartCard } from "@/components/charts/ChartCard";
@@ -9,23 +19,21 @@ import { formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 const chartPalette = ["#0f172a", "#1d4ed8", "#0f766e", "#be123c", "#7c3aed", "#f59e0b"];
 
-export function OverviewSection({ dashboard, filteredCases }) {
+function renderAxisLabel(count, percent) {
+  return `${formatNumber(count)} · ${formatPercent(percent)}`;
+}
+
+export function OverviewSection({ dashboard }) {
   const decreesRate = dashboard.typeStats.find((item) => item.type === "decreto")?.rate ?? 0;
   const mpsRate = dashboard.typeStats.find((item) => item.type === "mp")?.rate ?? 0;
   const bolsonaroCases = dashboard.cases.filter((item) => item.governo.includes("Bolsonaro")).length;
   const colegiada = dashboard.timeline.find((item) => item.id === "dias_ate_primeira_colegiada");
-  const topAxis = filteredCases.length ? filteredCases : dashboard.cases;
-  const casesByAxis = dashboard.casesByAxis
-    .map((item) => ({
-      ...item,
-      count:
-        topAxis.filter((caseItem) => caseItem.eixo === item.eixo).length,
-    }))
-    .filter((item) => item.count > 0)
-    .map((item) => ({
-      ...item,
-      percent: (item.count / topAxis.length) * 100,
-    }));
+  const totalCentralCases = dashboard.cases.length;
+  const casesByAxis = dashboard.casesByAxis.map((item) => ({
+    ...item,
+    percent: totalCentralCases ? (item.count / totalCentralCases) * 100 : 0,
+    labelValue: renderAxisLabel(item.count, totalCentralCases ? (item.count / totalCentralCases) * 100 : 0),
+  }));
 
   const highlights = [
     {
@@ -143,37 +151,47 @@ export function OverviewSection({ dashboard, filteredCases }) {
         </ChartCard>
 
         <ChartCard
-          title="Casos centrais por eixo temático"
-          subtitle="Distribuição do conjunto paradigmático filtrado, agora com leitura comparável por barras horizontais."
+          title="Distribuição dos casos paradigmáticos por eixo temático"
+          subtitle="O gráfico mostra como os 22 processos selecionados como casos centrais se distribuem entre os eixos analíticos definidos na pesquisa."
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={casesByAxis}
-              layout="vertical"
-              margin={{ top: 16, right: 24, left: 36, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis type="category" dataKey="eixo" width={220} tick={{ fontSize: 11 }} />
-              <Tooltip
-                content={
-                  <RichTooltip
-                    formatter={(payload) => {
-                      const row = payload[0]?.payload;
-                      if (!row) {
-                        return [];
-                      }
-                      return [
-                        { label: "Casos", value: formatNumber(row.count) },
-                        { label: "Participação", value: formatPercent(row.percent) },
-                      ];
-                    }}
+          <div className="flex h-full flex-col">
+            <div className="min-h-0 flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={casesByAxis}
+                  layout="vertical"
+                  margin={{ top: 16, right: 56, left: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis type="category" dataKey="eixo" width={240} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    content={
+                      <RichTooltip
+                        formatter={(payload) => {
+                          const row = payload[0]?.payload;
+                          if (!row) {
+                            return [];
+                          }
+                          return [
+                            { label: "Eixo temático", value: row.eixo },
+                            { label: "Número de casos", value: formatNumber(row.count) },
+                            { label: "Percentual do total", value: formatPercent(row.percent) },
+                          ];
+                        }}
+                      />
+                    }
                   />
-                }
-              />
-              <Bar dataKey="count" radius={[0, 10, 10, 0]} fill="#0f172a" />
-            </BarChart>
-          </ResponsiveContainer>
+                  <Bar dataKey="count" radius={[0, 10, 10, 0]} fill="#0f172a">
+                    <LabelList dataKey="labelValue" position="right" style={{ fill: "#334155", fontSize: 11 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              Esses casos não representam todos os processos da base. Eles são uma seleção qualitativa de processos paradigmáticos, usada para aprofundar a análise institucional.
+            </p>
+          </div>
         </ChartCard>
       </div>
     </motion.section>
