@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "description": "Contrato da camada pública de dados do dashboard da dissertação.",
+  "sourceFiles": {
+    "stf": "resultado_dissertacao_STF_atos_presidenciais.xlsx",
+    "corpus": "corpus_unificado_dissertacao.xlsx",
+    "revisao": "REVISÃO SISTEMÁTICA DE LITERATURA.xlsx"
+  },
+  "includedSheets": {
+    "stf": [
+      "00_README",
+      "00_diagnostico",
+      "01_tabela_sintese_dissertacao",
+      "A1_tipo_ato",
+      "A2_governo",
+      "A3_assunto",
+      "A4_objeto",
+      "A5_tipo_impacto",
+      "A6_efeito",
+      "A7_legitimado_ativo",
+      "A8_classe_processual",
+      "A9_serie_anual_norma",
+      "A10_serie_anual_autuacao",
+      "B1_taxa_geral_IC",
+      "B2_desfecho_categoria",
+      "B3_taxa_procedencia",
+      "B4_temporalidade_descritiva",
+      "B5_densidade_resumo",
+      "B9_logrank",
+      "B10_cox_resumo",
+      "B11_kaplan_meier",
+      "C1_paradigmaticos",
+      "C2_resumo_eixos",
+      "C7_efeito_posterior",
+      "C8_cluster_atribuicoes",
+      "C9_cluster_centros",
+      "C10_cluster_diagnostico",
+      "S1_termos_distintivos_TFIDF"
+    ],
+    "corpus": [
+      "0_LEIA_PRIMEIRO",
+      "2_camada_nuclear",
+      "7_resumo_estatistico",
+      "8_mapa_conceitos"
+    ],
+    "revisao": [
+      "niveis_analise",
+      "strings_booleanas",
+      "resumo_por_base"
+    ]
+  },
+  "excludedSheets": {
+    "stf": [
+      "A11_testes_inferenciais",
+      "B6_densidade_processos",
+      "B7_logit_procedencia",
+      "B8_ols_log_dias",
+      "C3_sugestao_por_eixo",
+      "C4_auditoria_filtros",
+      "C5_auditoria_individual",
+      "C6_auditoria_eixo_tipo_ato",
+      "X1_pares_processo_norma",
+      "X2_normas_universo",
+      "X3_processos_painel",
+      "X4_refs_nao_encontradas"
+    ],
+    "corpus": [
+      "1_corpus_unificado",
+      "3_camada_intermediaria",
+      "4_camada_periferica",
+      "5_camada_multipla",
+      "6_verificacao_manual"
+    ],
+    "revisao": [
+      "arquivos_lidos",
+      "duplicatas_identificadas",
+      "base_final_resumida",
+      "triagem_prioritaria"
+    ]
+  },
+  "mappings": {
+    "A1_tipo_ato": {
+      "target": "provocacaoSeletiva.tipoAto",
+      "percentKeys": ["taxaJudicializacao", "taxaIcLow", "taxaIcHigh"]
+    },
+    "A2_governo": {
+      "target": "provocacaoSeletiva.porGoverno",
+      "percentKeys": ["taxaJudicializacao", "taxaIcLow", "taxaIcHigh"]
+    },
+    "A3_assunto": {
+      "target": "provocacaoSeletiva.porAssunto",
+      "percentKeys": ["taxaJudicializacao"]
+    },
+    "A4_objeto": {
+      "target": "provocacaoSeletiva.porObjeto",
+      "percentKeys": ["taxaJudicializacao"]
+    },
+    "A5_tipo_impacto": {
+      "target": "provocacaoSeletiva.porTipoImpacto",
+      "percentKeys": ["taxaJudicializacao"]
+    },
+    "A6_efeito": {
+      "target": "provocacaoSeletiva.porEfeito",
+      "percentKeys": ["taxaJudicializacao"]
+    },
+    "A7_legitimado_ativo": {
+      "target": "provocacaoSeletiva.legitimadosAtivos",
+      "percentKeys": ["participacao"]
+    },
+    "A8_classe_processual": {
+      "target": "provocacaoSeletiva.classesProcessuais",
+      "percentKeys": ["participacao"]
+    },
+    "A9_serie_anual_norma": {
+      "target": "provocacaoSeletiva.serieAnualNorma",
+      "percentKeys": ["taxaJudicializacao"]
+    },
+    "A10_serie_anual_autuacao": {
+      "target": "provocacaoSeletiva.serieAnualAutuacao",
+      "percentKeys": []
+    },
+    "B1_taxa_geral_IC": {
+      "target": "intensidadeMerito.taxaGeralIC",
+      "percentKeys": ["taxa", "icLow", "icHigh"]
+    },
+    "B2_desfecho_categoria": {
+      "target": "intensidadeMerito.desfechos",
+      "percentKeys": ["participacao"]
+    },
+    "B3_taxa_procedencia": {
+      "target": "meritoTemporalidade.procedencia",
+      "percentKeys": ["taxa", "taxaIcLow", "taxaIcHigh"]
+    },
+    "B4_temporalidade_descritiva": {
+      "target": "meritoTemporalidade.temposDescritivos",
+      "percentKeys": []
+    },
+    "B5_densidade_resumo": {
+      "target": "intensidadeMerito.densidadeResumo",
+      "percentKeys": ["pComAmici"]
+    },
+    "B9_logrank": {
+      "target": "meritoTemporalidade.logrank",
+      "percentKeys": []
+    },
+    "B10_cox_resumo": {
+      "target": "meritoTemporalidade.coxResumo",
+      "percentKeys": []
+    },
+    "B11_kaplan_meier": {
+      "target": "meritoTemporalidade.kaplanMeier",
+      "percentKeys": []
+    },
+    "C1_paradigmaticos": {
+      "target": "casosParadigmaticos.lista",
+      "mode": "casosParadigmaticosPublicos"
+    },
+    "C2_resumo_eixos": {
+      "target": "casosParadigmaticos.eixosResumo",
+      "percentKeys": []
+    },
+    "C7_efeito_posterior": {
+      "target": "efeitoPosterior.janelaCincoAnos",
+      "percentKeys": ["razaoPosTotal"],
+      "mode": "efeitoPosteriorJanela"
+    },
+    "C8_cluster_atribuicoes": {
+      "target": "clusters.atribuicoes",
+      "percentKeys": []
+    },
+    "C9_cluster_centros": {
+      "target": "clusters.centros",
+      "percentKeys": []
+    },
+    "C10_cluster_diagnostico": {
+      "target": "clusters.diagnostico",
+      "percentKeys": []
+    },
+    "S1_termos_distintivos_TFIDF": {
+      "target": "tfidf.termosDistintivos",
+      "percentKeys": []
+    },
+    "7_resumo_estatistico": {
+      "target": "corpusTeorico.resumoEstatistico",
+      "mode": "resumoEstatistico"
+    },
+    "8_mapa_conceitos": {
+      "target": "corpusTeorico.mapaConceitos",
+      "percentKeys": []
+    },
+    "niveis_analise": {
+      "target": "revisaoLiteratura.niveisAnalise",
+      "percentKeys": []
+    },
+    "strings_booleanas": {
+      "target": "revisaoLiteratura.stringsBooleanas",
+      "percentKeys": []
+    },
+    "resumo_por_base": {
+      "target": "revisaoLiteratura.resumoPorBase",
+      "percentKeys": []
+    }
+  },
+  "requiredTopLevelKeys": [
+    "meta",
+    "metodologia",
+    "visaoGeral",
+    "provocacaoSeletiva",
+    "intensidadeMerito",
+    "meritoTemporalidade",
+    "efeitoPosterior",
+    "casosParadigmaticos",
+    "clusters",
+    "tfidf",
+    "corpusTeorico",
+    "revisaoLiteratura",
+    "limites"
+  ],
+  "requiredLists": [
+    "provocacaoSeletiva.tipoAto",
+    "provocacaoSeletiva.porGoverno",
+    "provocacaoSeletiva.porAssunto",
+    "provocacaoSeletiva.porObjeto",
+    "provocacaoSeletiva.porTipoImpacto",
+    "provocacaoSeletiva.porEfeito",
+    "provocacaoSeletiva.legitimadosAtivos",
+    "provocacaoSeletiva.classesProcessuais",
+    "provocacaoSeletiva.serieAnualNorma",
+    "provocacaoSeletiva.serieAnualAutuacao",
+    "intensidadeMerito.taxaGeralIC",
+    "intensidadeMerito.desfechos",
+    "intensidadeMerito.densidadeResumo",
+    "meritoTemporalidade.procedencia",
+    "meritoTemporalidade.temposDescritivos",
+    "meritoTemporalidade.coxResumo",
+    "meritoTemporalidade.kaplanMeier",
+    "efeitoPosterior.janelaCincoAnos",
+    "casosParadigmaticos.lista",
+    "casosParadigmaticos.eixosResumo",
+    "clusters.atribuicoes",
+    "clusters.centros",
+    "clusters.diagnostico",
+    "tfidf.termosDistintivos",
+    "corpusTeorico.camadaNuclear",
+    "corpusTeorico.mapaConceitos",
+    "revisaoLiteratura.niveisAnalise",
+    "revisaoLiteratura.stringsBooleanas",
+    "revisaoLiteratura.resumoPorBase"
+  ]
+}
