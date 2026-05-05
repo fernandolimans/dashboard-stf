@@ -13,6 +13,15 @@ const typeShort = {
   mp: "MP",
 };
 
+// Paleta sóbria para manter leitura acadêmica consistente entre as abas.
+export const chartColors = {
+  primary: "#0f172a",
+  secondary: "#334155",
+  tertiary: "#64748b",
+  muted: "#94a3b8",
+  accent: "#166534",
+};
+
 const marcoLabels = {
   dias_ate_primeira_monocratica: "1ª decisão monocrática",
   dias_ate_primeira_colegiada: "1ª decisão colegiada",
@@ -123,6 +132,44 @@ function getSummaryItem(items, key) {
   return (items || []).find((item) => repairText(item.chave, "") === key);
 }
 
+function normalizeBibliographicTitle(value) {
+  return repairText(value, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeBrokenBibliographicEntry(item) {
+  const title = repairText(item?.titulo, "");
+  const authors = repairText(item?.autores, "");
+  const sourceType = repairText(item?.fontePeriodico, "");
+  const normalized = normalizeBibliographicTitle(`${title} ${authors} ${sourceType}`);
+
+  if (!title) {
+    return true;
+  }
+
+  const suspiciousFragments = [
+    "presidente da republica a presidir um conselho",
+    "transparencia y el mejor gobierno",
+    "abstract judicial appointments are political",
+    "acesso em:",
+    "recibido:",
+    "1of3",
+    "4:13 pm",
+    "%22",
+  ];
+
+  return (
+    title.length > 260 ||
+    (!authors && title.length > 180) ||
+    suspiciousFragments.some((fragment) => normalized.includes(fragment)) ||
+    /\b\d+of\d+\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/i.test(`${title} ${sourceType}`)
+  );
+}
+
 function buildTempo(items) {
   const grouped = new Map();
 
@@ -132,7 +179,7 @@ function buildTempo(items) {
       grouped.get(marcoKey) ??
       {
         id: marcoKey,
-        marco: marcoLabels[marcoKey] ?? repairText(marcoKey, marcoKey),
+        marco: repairText(marcoLabels[marcoKey] ?? marcoKey, marcoKey),
         decretos: null,
         mps: null,
         decretosN: null,
@@ -281,7 +328,9 @@ function buildTheory(data) {
       percent: item.percentual ? Number(item.percentual) / 10 : null,
     }));
 
-  const coreWorks = (data.corpusTeorico?.camadaNuclear || []).map((item) => ({
+  const coreWorks = (data.corpusTeorico?.camadaNuclear || [])
+    .filter((item) => !looksLikeBrokenBibliographicEntry(item))
+    .map((item) => ({
     title: repairText(item.titulo),
     authors: repairText(item.autores),
     year: item.ano ?? null,
@@ -298,7 +347,7 @@ function buildTheory(data) {
       item.fontePeriodico,
       item.origem
     ),
-  }));
+    }));
 
   const concepts = (data.corpusTeorico?.mapaConceitos || []).map((item) => ({
     id: repairText(item.conceitoId),

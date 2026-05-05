@@ -5,7 +5,7 @@ import { Filter } from "lucide-react";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
-import { formatNumber, formatPercent } from "@/lib/dashboard-data";
+import { chartColors, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 function compareBy(field) {
   return (left, right) => {
@@ -45,7 +45,7 @@ function ThemeChart({ data, title }) {
               />
             }
           />
-          <Bar dataKey="rate" radius={[0, 10, 10, 0]} fill="#0f766e" />
+          <Bar dataKey="rate" radius={[0, 10, 10, 0]} fill={chartColors.accent} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>

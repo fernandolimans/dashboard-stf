@@ -15,9 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { KpiCard } from "@/components/layout/KpiCard";
-import { formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
-
-const chartPalette = ["#0f172a", "#1d4ed8", "#0f766e", "#be123c", "#7c3aed", "#f59e0b"];
+import { chartColors, formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 function renderAxisLabel(count, percent) {
   return `${formatNumber(count)} · ${formatPercent(percent)}`;
@@ -29,6 +27,9 @@ export function OverviewSection({ dashboard }) {
   const bolsonaroCases = dashboard.cases.filter((item) => item.governo.includes("Bolsonaro")).length;
   const colegiada = dashboard.timeline.find((item) => item.id === "dias_ate_primeira_colegiada");
   const totalCentralCases = dashboard.cases.length;
+  const totalMeritDecisions = dashboard.meritRates.reduce((total, item) => total + (item.decisions ?? 0), 0);
+  const totalMeritFavorable = dashboard.meritRates.reduce((total, item) => total + (item.favorable ?? 0), 0);
+  const meritSuccessRate = totalMeritDecisions ? (totalMeritFavorable / totalMeritDecisions) * 100 : null;
   const casesByAxis = dashboard.casesByAxis.map((item) => ({
     ...item,
     percent: totalCentralCases ? (item.count / totalCentralCases) * 100 : 0,
@@ -80,31 +81,29 @@ export function OverviewSection({ dashboard }) {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={FileText}
-          label="Normas judicializadas"
-          value={formatNumber(
-            dashboard.typeStats.reduce((total, item) => total + (item.judicialized ?? 0), 0)
-          )}
-          detail="Total de decretos e MPs judicializados no recorte público."
+          label="Decisões de mérito"
+          value={formatNumber(totalMeritDecisions)}
+          detail="Decisões de mérito agregadas no recorte público."
         />
         <KpiCard
           icon={Gavel}
-          label="Processos distintos"
-          value={formatNumber(dashboard.methodology.universe.processCount)}
-          detail="Processos de controle concentrado com evidência de judicialização."
+          label="Taxa de procedência em mérito"
+          value={formatPercent(meritSuccessRate)}
+          detail={`${formatNumber(totalMeritFavorable)} decisões favoráveis dentro do conjunto de mérito.`}
           accent="bg-blue-50 text-blue-700"
         />
         <KpiCard
           icon={ShieldAlert}
-          label="Taxa das MPs"
-          value={formatPercent(mpsRate)}
-          detail={`Comparativo direto com ${formatPercent(decreesRate)} nos decretos.`}
+          label="Casos paradigmáticos"
+          value={formatNumber(dashboard.cases.length)}
+          detail="Seleção qualitativa usada para aprofundar a análise institucional."
           accent="bg-emerald-50 text-emerald-700"
         />
         <KpiCard
           icon={Landmark}
-          label="Pares processo–norma"
-          value={formatNumber(dashboard.methodology.universe.processNormPairs)}
-          detail="Unidade analítica primária da pesquisa."
+          label="Eixos temáticos"
+          value={formatNumber(dashboard.casesByAxis.length)}
+          detail="Número de eixos analíticos cobertos pelos casos centrais."
           accent="bg-amber-50 text-amber-700"
         />
       </div>
@@ -143,7 +142,7 @@ export function OverviewSection({ dashboard }) {
               />
               <Bar dataKey="rate" radius={[10, 10, 0, 0]}>
                 {dashboard.typeStats.map((item, index) => (
-                  <Cell key={item.type} fill={chartPalette[index % chartPalette.length]} />
+                  <Cell key={item.type} fill={index === 0 ? chartColors.primary : chartColors.secondary} />
                 ))}
               </Bar>
             </BarChart>
@@ -182,8 +181,8 @@ export function OverviewSection({ dashboard }) {
                       />
                     }
                   />
-                  <Bar dataKey="count" radius={[0, 10, 10, 0]} fill="#0f172a">
-                    <LabelList dataKey="labelValue" position="right" style={{ fill: "#334155", fontSize: 11 }} />
+                  <Bar dataKey="count" radius={[0, 10, 10, 0]} fill={chartColors.primary}>
+                    <LabelList dataKey="labelValue" position="right" style={{ fill: chartColors.secondary, fontSize: 11 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

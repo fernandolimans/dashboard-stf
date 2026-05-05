@@ -15,6 +15,37 @@ function MethodCard({ title, description }) {
   );
 }
 
+const glossaryItems = [
+  {
+    term: "Procedente",
+    definition: "O tribunal acolhe o pedido principal e reconhece a inconstitucionalidade ou a validade nos termos requeridos.",
+  },
+  {
+    term: "Procedente em parte",
+    definition: "O tribunal acolhe apenas parte do pedido, com efeitos mais limitados do que os pleiteados integralmente.",
+  },
+  {
+    term: "Improcedente",
+    definition: "O pedido é rejeitado no mérito e o tribunal não concede a tutela constitucional pretendida.",
+  },
+  {
+    term: "Prejudicada",
+    definition: "O julgamento perde objeto porque o ato impugnado mudou, cessou ou deixou de produzir efeito relevante.",
+  },
+  {
+    term: "Negado seguimento",
+    definition: "O processo não avança porque o relator identifica óbice processual suficiente para barrar sua tramitação.",
+  },
+  {
+    term: "Não conhecida",
+    definition: "O tribunal entende que a ação não preenche requisitos formais mínimos para exame do mérito.",
+  },
+  {
+    term: "Extinta",
+    definition: "O processo é encerrado sem exame substancial completo, normalmente por vício processual ou perda superveniente de objeto.",
+  },
+];
+
 export function MethodologySection({ methodology, limits, excludedSheets }) {
   return (
     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 space-y-6">
@@ -56,6 +87,23 @@ export function MethodologySection({ methodology, limits, excludedSheets }) {
         <MethodCard title="Cruzamento controlado" description={methodology.extraction.controlledMatch} />
         <MethodCard title="Tratamento de referências especiais" description={methodology.extraction.decreeLawTreatment} />
       </div>
+
+      <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <CardContent className="p-5">
+          <h3 className="text-lg font-semibold text-slate-950">Glossário processual mínimo</h3>
+          <p className="mt-2 text-sm text-slate-500">
+            Leitura breve dos principais desfechos para leitor estrangeiro.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {glossaryItems.map((item) => (
+              <div key={item.term} className="rounded-2xl bg-slate-50 px-4 py-3">
+                <p className="text-sm font-semibold text-slate-900">{item.term}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{item.definition}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <CardContent className="p-5">

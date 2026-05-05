@@ -5,7 +5,7 @@ import { Filter } from "lucide-react";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
-import { formatNumber, formatPercent } from "@/lib/dashboard-data";
+import { chartColors, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 function truncateGovernment(value, max = 18) {
   return value.length > max ? `${value.slice(0, max)}…` : value;
@@ -47,7 +47,7 @@ function GovernmentChart({ data, title }) {
               />
             }
           />
-          <Bar dataKey="rate" radius={[0, 10, 10, 0]} fill="#1d4ed8" />
+          <Bar dataKey="rate" radius={[0, 10, 10, 0]} fill={chartColors.secondary} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>

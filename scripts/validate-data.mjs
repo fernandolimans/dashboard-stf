@@ -45,6 +45,44 @@ function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function normalizeBibliographicTitle(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeBrokenBibliographicEntry(item) {
+  const title = String(item?.titulo ?? "").trim();
+  const authors = String(item?.autores ?? "").trim();
+  const sourceType = String(item?.fontePeriodico ?? "").trim();
+  const normalized = normalizeBibliographicTitle(`${title} ${authors} ${sourceType}`);
+
+  if (!title) {
+    return true;
+  }
+
+  const suspiciousFragments = [
+    "presidente da republica a presidir um conselho",
+    "transparencia y el mejor gobierno",
+    "abstract judicial appointments are political",
+    "acesso em:",
+    "recibido:",
+    "1of3",
+    "4:13 pm",
+    "%22",
+  ];
+
+  return (
+    title.length > 260 ||
+    (!authors && title.length > 180) ||
+    suspiciousFragments.some((fragment) => normalized.includes(fragment)) ||
+    /\b\d+of\d+\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/i.test(`${title} ${sourceType}`)
+  );
+}
+
 function main() {
   if (!fs.existsSync(dataFile)) {
     throw new Error(`JSON não encontrado: ${dataFile}`);
@@ -81,6 +119,7 @@ function main() {
     missingTopLevel: [],
     emptySections: [],
     emptyLists: [],
+    suspiciousBibliographicTitles: [],
     cabralFound: false,
   };
 
@@ -150,6 +189,21 @@ function main() {
   }
 
   const camadaNuclear = getByPath(pesquisa, "corpusTeorico.camadaNuclear");
+  findings.suspiciousBibliographicTitles = Array.isArray(camadaNuclear)
+    ? camadaNuclear
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => looksLikeBrokenBibliographicEntry(item))
+        .map(({ index }) => `corpusTeorico.camadaNuclear[${index}].titulo`)
+    : [];
+
+  if (findings.suspiciousBibliographicTitles.length) {
+    issues.push(
+      `Títulos bibliográficos suspeitos na camada pública: ${findings.suspiciousBibliographicTitles
+        .slice(0, 10)
+        .join(", ")}`
+    );
+  }
+
   findings.cabralFound =
     Array.isArray(camadaNuclear) &&
     camadaNuclear.some((item) => {
@@ -181,6 +235,7 @@ function main() {
   console.log(`[validate:data] NaN/undefined textuais: ${findings.invalidTokens.length}`);
   console.log(`[validate:data] Percentuais textuais: ${findings.textualPercentages.length}`);
   console.log(`[validate:data] Objetos vazios indevidos: ${findings.emptyObjects.length}`);
+  console.log(`[validate:data] Títulos bibliográficos suspeitos: ${findings.suspiciousBibliographicTitles.length}`);
   console.log(`[validate:data] Obra Cabral/Reis/Marques localizada: ${findings.cabralFound ? "sim" : "não"}`);
 
   if (!passed) {

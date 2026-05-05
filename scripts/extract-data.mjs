@@ -428,6 +428,48 @@ function countRows(rows) {
   return Array.isArray(rows) ? rows.length : 0;
 }
 
+function normalizeBibliographicTitle(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeBrokenBibliographicEntry(item) {
+  const title = String(item?.titulo ?? "").trim();
+  const authors = String(item?.autores ?? "").trim();
+  const sourceType = String(item?.fontePeriodico ?? "").trim();
+  const normalized = normalizeBibliographicTitle(`${title} ${authors} ${sourceType}`);
+
+  if (!title) {
+    return true;
+  }
+
+  const suspiciousFragments = [
+    "presidente da republica a presidir um conselho",
+    "transparencia y el mejor gobierno",
+    "abstract judicial appointments are political",
+    "acesso em:",
+    "recibido:",
+    "1of3",
+    "4:13 pm",
+    "%22",
+  ];
+
+  return (
+    title.length > 260 ||
+    (!authors && title.length > 180) ||
+    suspiciousFragments.some((fragment) => normalized.includes(fragment)) ||
+    /\b\d+of\d+\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/i.test(`${title} ${sourceType}`)
+  );
+}
+
+function sanitizeCamadaNuclear(rows) {
+  return (rows || []).filter((item) => !looksLikeBrokenBibliographicEntry(item));
+}
+
 function appendCabralWork(camadaNuclear) {
   const titleNeedle = "a erosao democratica brasileira";
   const alreadyIncluded = camadaNuclear.some((item) =>
@@ -591,7 +633,7 @@ function buildResearchJson() {
   }
 
   pesquisa.corpusTeorico.camadaNuclear = appendCabralWork(
-    sheetToObjects(workbooks.corpus, "2_camada_nuclear")
+    sanitizeCamadaNuclear(sheetToObjects(workbooks.corpus, "2_camada_nuclear"))
   );
 
   pesquisa.limites = {

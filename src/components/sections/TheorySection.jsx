@@ -6,7 +6,7 @@ import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
 import { KpiCard } from "@/components/layout/KpiCard";
-import { formatNumber, formatPercent } from "@/lib/dashboard-data";
+import { chartColors, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 function compareWorks(order) {
   return (left, right) => {
@@ -104,7 +104,7 @@ export function TheorySection({ theory, literature }) {
                   />
                 }
               />
-              <Bar dataKey="quantity" fill="#0f172a" radius={[10, 10, 0, 0]} />
+              <Bar dataKey="quantity" fill={chartColors.primary} radius={[10, 10, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -131,7 +131,7 @@ export function TheorySection({ theory, literature }) {
                   />
                 }
               />
-              <Bar dataKey="count" fill="#1d4ed8" radius={[0, 10, 10, 0]} />
+              <Bar dataKey="count" fill={chartColors.secondary} radius={[0, 10, 10, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

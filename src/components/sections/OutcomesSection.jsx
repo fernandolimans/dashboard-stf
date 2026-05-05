@@ -16,7 +16,19 @@ import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
 import { KpiCard } from "@/components/layout/KpiCard";
-import { formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
+import { chartColors, formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
+
+function formatTimelineTick(value) {
+  if (value === "1ª decisão monocrática") {
+    return "Decisão monocrática";
+  }
+
+  if (value === "1ª decisão colegiada") {
+    return "Decisão colegiada";
+  }
+
+  return value;
+}
 
 export function OutcomesSection({ dashboard }) {
   return (
@@ -50,8 +62,8 @@ export function OutcomesSection({ dashboard }) {
                 }
               />
               <Legend />
-              <Bar dataKey="decretosPct" name="Decretos" fill="#0f172a" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="mpsPct" name="MPs" fill="#2563eb" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="decretosPct" name="Decretos" fill={chartColors.primary} radius={[8, 8, 0, 0]} />
+              <Bar dataKey="mpsPct" name="MPs" fill={chartColors.secondary} radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -61,9 +73,17 @@ export function OutcomesSection({ dashboard }) {
           subtitle="Agora usando o formato real do JSON público e exibindo as séries de decretos e MPs nos três marcos temporais."
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dashboard.timeline} margin={{ top: 16, right: 24, left: 0, bottom: 40 }}>
+            <LineChart data={dashboard.timeline} margin={{ top: 16, right: 24, left: 0, bottom: 48 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-              <XAxis dataKey="marco" angle={-18} textAnchor="end" height={70} />
+              <XAxis
+                dataKey="marco"
+                interval={0}
+                height={82}
+                angle={-14}
+                textAnchor="end"
+                tick={{ fontSize: 11 }}
+                tickFormatter={formatTimelineTick}
+              />
               <YAxis />
               <Tooltip
                 content={
@@ -74,6 +94,7 @@ export function OutcomesSection({ dashboard }) {
                         return [];
                       }
                       return [
+                        { label: "Marco temporal", value: row.marco },
                         { label: "Decretos", value: formatDays(row.decretos) },
                         {
                           label: "Faixa decretos",
@@ -87,8 +108,8 @@ export function OutcomesSection({ dashboard }) {
                 }
               />
               <Legend />
-              <Line type="monotone" dataKey="decretos" name="Decretos" stroke="#0f172a" strokeWidth={3} />
-              <Line type="monotone" dataKey="mps" name="MPs" stroke="#2563eb" strokeWidth={3} />
+              <Line type="monotone" dataKey="decretos" name="Decretos" stroke={chartColors.primary} strokeWidth={3} />
+              <Line type="monotone" dataKey="mps" name="MPs" stroke={chartColors.secondary} strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>

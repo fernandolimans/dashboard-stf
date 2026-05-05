@@ -6,7 +6,7 @@ import { ChartCard } from "@/components/charts/ChartCard";
 import { RichTooltip } from "@/components/charts/RichTooltip";
 import { DataTable } from "@/components/tables/DataTable";
 import { KpiCard } from "@/components/layout/KpiCard";
-import { formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
+import { chartColors, formatDays, formatNumber, formatPercent } from "@/lib/dashboard-data";
 
 function truncateAxis(value, max = 22) {
   return value.length > max ? `${value.slice(0, max)}…` : value;
@@ -41,10 +41,7 @@ export function CasesSection({ rows, axisOptions }) {
     });
   }, [axis, rows, search]);
 
-  const orderedRows = useMemo(
-    () => [...filteredRows].sort(compareRows(order)),
-    [filteredRows, order]
-  );
+  const orderedRows = useMemo(() => [...filteredRows].sort(compareRows(order)), [filteredRows, order]);
 
   const topAmici = orderedRows
     .slice()
@@ -154,7 +151,7 @@ export function CasesSection({ rows, axisOptions }) {
                   />
                 }
               />
-              <Bar dataKey="amici" fill="#7c3aed" radius={[10, 10, 0, 0]} />
+              <Bar dataKey="amici" fill={chartColors.secondary} radius={[10, 10, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -187,7 +184,7 @@ export function CasesSection({ rows, axisOptions }) {
                   />
                 }
               />
-              <Bar dataKey="count" fill="#be123c" radius={[0, 10, 10, 0]} />
+              <Bar dataKey="count" fill={chartColors.accent} radius={[0, 10, 10, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -225,6 +222,10 @@ export function CasesSection({ rows, axisOptions }) {
           },
         ]}
       />
+
+      <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+        ADI, ADC e ADPF são classes processuais do controle concentrado de constitucionalidade no Supremo Tribunal Federal brasileiro. ADI = Ação Direta de Inconstitucionalidade; ADC = Ação Declaratória de Constitucionalidade; ADPF = Arguição de Descumprimento de Preceito Fundamental.
+      </p>
     </motion.section>
   );
 }
